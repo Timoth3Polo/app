@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Server port="8005" shutdown="SHUTDOWN">
+
+  <!-- Listener pour activer l'APR (Apache Portable Runtime) pour des performances et une gestion de threads optimisée. -->
+  <!-- L'APR est conseillé pour les applications à fort trafic, mais il est important de l'utiliser avec un serveur optimisé. -->
+  <Listener className="org.apache.catalina.core.AprLifecycleListener" SSLEngine="on" />
+
+  <!-- Prévention des fuites de mémoire liées à l’utilisation de Java 7+ -->
+  <Listener className="org.apache.catalina.core.JreMemoryLeakPreventionListener" />
+
+  <!-- Activation du nettoyage des ressources globales pour éviter des fuites de ressources -->
+  <Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener" />
+
+  <!-- Prévention des fuites de mémoire liées aux threads locaux dans Tomcat -->
+  <Listener className="org.apache.catalina.core.ThreadLocalLeakPreventionListener" />
+
+  <Service name="Catalina">
+
+    <!-- Connecteur HTTP, écoute sur le port sécurisé 4714. -->
+    <!-- La configuration du port HTTP peut être couplée avec une protection contre les attaques DDoS. -->
+    <!-- Pensez à activer un certificat SSL pour les connexions sécurisées si nécessaire. -->
+    <Connector  port="4714" protocol="HTTP/1.1"
+                connectionTimeout="20000"
+                maxThreads="200"
+                maxConnections="10000"
+                keepAliveTimeout="15000"
+                compression="on"
+                compressableMimeType="text/html,text/xml,text/plain" />
+    <!-- Définir le délai d'attente pour les connexions -->
+    <!-- redirectPort="8443"           Si une connexion n'est pas sécurisée, rediriger vers HTTPS -->
+    <!-- Limiter le nombre de threads pour éviter la surcharge du serveur -->
+    <!-- Limiter les connexions simultanées pour éviter les attaques par surcharge -->
+    <!-- Timeout pour garder la connexion vivante (évite les connexions persistantes inutiles) -->
+    <!-- Activer la compression pour réduire la bande passante (généralement, activée si les utilisateurs accèdent souvent au même contenu) -->
+    <!-- Limiter les types de contenu compressés (pour éviter des attaques de décompression) -->
+
+    <!-- Configurer les informations de sécurité supplémentaires : -->
+    <!-- Exemple : configurer un filtre pour limiter l'accès HTTP uniquement à certains IPs -->
+    <Valve className="org.apache.catalina.valves.RemoteAddrValve"
+           allow="127\.\d+\.\d+\.\d+" /> <!-- Filtre pour autoriser uniquement les connexions locales (modifier selon tes besoins) -->
+
+    <!-- Engine et contexte -->
+    <Engine name="Catalina" defaultHost="localhost">
+      <!-- Le Host définit le domaine par défaut de l'application -->
+      <Host name="localhost" appBase="webapps"
+            unpackWARs="true"
+            autoDeploy="false"
+            deployOnStartup="true" />
+      <!-- Permet d'extraire les fichiers WAR au démarrage (cela peut poser un risque si non sécurisé) -->
+      <!-- Désactiver l'auto-déploiement automatique des applications pour mieux contrôler les déploiements -->
+      <!-- Activer le déploiement automatique au démarrage de Tomcat (si sécurisé) -->
+
+      <!-- Désactivation de la documentation et des exemples par défaut pour éviter l'accès à des ressources inutiles -->
+      <Context docBase="webapps/ROOT" path="/" debug="0" privileged="true">
+        <Parameter name="disallowLinking" value="true" />
+        <Logger className="org.apache.catalina.logger.FileLogger" directory="logs" prefix="localhost_access_log" suffix=".txt" timestamp="true" />
+      </Context>
+    </Engine>
+  </Service>
+
+</Server>
